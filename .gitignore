@@ -1,0 +1,67 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.class
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+env/
+
+# PyCharm project files
+.idea/
+
+# VSCode project files
+.vscode/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Test output
+htmlcov/
+.tox/
+.nox/
+coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Log files
+*.log
+
+# macOS system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Python environment files
+*.env
+*.egg-info/
+*.egg
+*.pkl
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# MyPy and other linter files
+.mypy_cache/
+.pytest_cache/
+.pyre/
+
+# Custom data
+*.sqlite3
+*.db
+*.bak
+*.tmp
+*.swp
+
+# Ignore secret config files
+*.env
+.env.*
