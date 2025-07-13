@@ -1,0 +1,4 @@
+selenide==0.0.15
+pytest==6.1.2
+allure-pytest
+selenium
