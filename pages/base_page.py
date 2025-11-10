@@ -6,6 +6,12 @@ class BasePage:
         self.driver = driver
         self.url = url
 
+    def __init__(self, browser):
+        self.browser = browser
+
+    def find(self, *args):
+        return self.browser.find_element(*args)
+
     def open(self):
         self.driver.get(self.url)
 
