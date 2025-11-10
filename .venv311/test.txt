@@ -1,0 +1,154 @@
+1️⃣ создать структуру проекта,
+2️⃣ настроить тестовый фреймворк,
+3️⃣ подключить CI/CD (в твоём случае — Jenkins) и
+4️⃣ сделать автоматический запуск по расписанию и по кнопке.
+
+🧱 1. Создаём структуру нового Python-проекта
+
+Создавай базовую структуру репозитория (в Git):
+
+project-tests/
+├── src/                    # если есть утилиты или клиент для API
+│   ├── api_client.py
+│   └── utils.py
+├── tests/                  # все тесты
+│   ├── __init__.py
+│   ├── test_example.py
+│   ├── api/
+│   ├── ui/
+│   └── fixtures/
+├── conftest.py             # общие фикстуры pytest
+├── requirements.txt        # зависимости
+├── pytest.ini              # настройки pytest
+├── README.md
+└── Jenkinsfile             # описание pipeline
+
+2. Настрой pytest + окружение
+requirements.txt
+
+pytest==8.3.3
+pytest-html
+pytest-xdist
+requests
+allure-pytest
+
+
+pytest.ini
+
+[pytest]
+addopts = -v --tb=short --alluredir=reports/allure-results
+testpaths = tests
+
+
+пример теста (tests/test_example.py):
+
+import requests
+
+def test_status_code():
+    r = requests.get("https://httpbin.org/status/200")
+    assert r.status_code == 200
+
+🧰 3. Jenkins — базовый pipeline (Jenkinsfile)
+
+Создай Jenkinsfile в корне проекта:
+pipeline {
+    agent any
+
+    environment {
+        PYTHON = "/usr/bin/python3"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/your-org/project-tests.git'
+            }
+        }
+
+        stage('Install dependencies') {
+            steps {
+                sh 'python3 -m venv venv'
+                sh '. venv/bin/activate && pip install -r requirements.txt'
+            }
+        }
+
+        stage('Run tests') {
+            steps {
+                sh '. venv/bin/activate && pytest --maxfail=1 --disable-warnings'
+            }
+        }
+
+        stage('Generate Allure Report') {
+            steps {
+                sh '. venv/bin/activate && pytest --alluredir=reports/allure-results'
+            }
+        }
+
+        stage('Publish Report') {
+            steps {
+                allure([
+                    includeProperties: false,
+                    jdk: '',
+                    results: [[path: 'reports/allure-results']]
+                ])
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'reports/**', fingerprint: true
+        }
+    }
+}
+
+
+👉 Примечания:
+
+В Jenkins нужно заранее установить Allure plugin.
+
+Если тестов немного, можно не использовать venv, а просто pip install -r requirements.txt.
+
+⏰ 4. Прогон по расписанию
+
+В настройках Jenkins job:
+перейди в → "Build Triggers" → "Build periodically"
+и укажи cron-строку, например:
+
+H 2 * * *      # каждый день в 2:00 ночи
+
+
+(используй H вместо конкретного числа, чтобы Jenkins сам распределил время, если несколько задач одновременно)
+
+
+🧩 5. Ручной запуск
+
+Для ручного запуска просто включи:
+
+галочку "This project is parameterized",
+
+добавь параметры, если нужно (например, ENV=dev/stage/prod),
+
+Jenkins UI позволит запускать job кнопкой "Build with Parameters".
+
+💡 6. (Бонус) — интеграция Allure
+
+Если хочешь красивые отчёты:
+
+Установи Allure Jenkins plugin.
+
+Добавь шаг allure([...]) (как выше).
+
+После билда появится вкладка “Allure Report”.
+
+🚀 7. Проверка локально
+
+Перед первым пушем в репозиторий — проверь локально:
+
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+pytest -v
+
+
+Если всё зелёное — можешь пушить.
